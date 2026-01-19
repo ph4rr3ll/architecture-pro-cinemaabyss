@@ -59,9 +59,9 @@
 Необходимые тесты для проверки этого API вызываются при запуске npm run test:local из папки tests/postman 
 Приложите скриншот тестов и скриншот состояния топиков Kafka http://localhost:8090 
 
-![Результат тестов][https://1.downloader.disk.yandex.ru/preview/ba16061fcfffc2b084d1cf11c60dfcb88c7a5d6cdf319ad0829f6456a1005058/inf/yhOZvJTg9CL0zg3Wz_xFc15r66iSOVvrzlVQ-MygBudDG9tKvVpoO9YQtwqCwYETfs1Brvr278MdtHdrtDxT1w%3D%3D?uid=160551065&filename=newman-results.png&disposition=inline&hash=&limit=0&content_type=image%2Fpng&owner_uid=160551065&tknv=v3&size=2880x1556]
+![Результат тестов](tests/results/newman-results.png?raw=true "Результат тестов")
 
-![Состояние топиков][tests/results/kafka-topics.png?raw=true "Состояние топиков"]
+![Состояние топиков](tests/results/kafka-topics.png?raw=true "Состояние топиков")
 
 ## Задание 3
 
