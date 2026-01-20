@@ -113,12 +113,13 @@ jobs:
 Как только сборка отработает и в github registry появятся ваши образы, можно переходить к блоку настройки Kubernetes
 Успешным результатом данного шага является "зеленая" сборка и "зеленые" тесты
 
+[Результаты выполнения actions](https://github.com/ph4rr3ll/architecture-pro-cinemaabyss/actions)
 
 ### Proxy в Kubernetes
 
 #### Шаг 1
 Для деплоя в kubernetes необходимо залогиниться в docker registry Github'а.
-1. Создайте Personal Access Token (PAT) https://github.com/settings/tokens . Создавайте class с правом read:packages
+1. Создайте Personal Access Token (PAT)  . Создавайте class с правом read:packages
 2. В src/kubernetes/*.yaml (event-service, monolith, movies-service и proxy-service)  отредактируйте путь до ваших образов 
 ```bash
  spec:
@@ -277,6 +278,13 @@ cat .docker/config.json | base64
 #### Шаг 3
 Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
 
+![Результаты тестов](tests/results/k8s-movies-result.png?raw=true "Работа API")
+
+![Результаты тестов](tests/results/k8s-movies-logs.png?raw=true "Работа API (логи)")
+
+![Результаты тестов](tests/results/k8s-newman-tests.png?raw=true "Результаты тестов")
+
+![Результаты тестов](tests/results/k8s-events-logs.png?raw=true "Логи events-service")
 
 ## Задание 4
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу 
