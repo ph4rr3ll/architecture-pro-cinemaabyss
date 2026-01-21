@@ -1,0 +1,92 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь", "Смотрит фильмы на различных устройствах")
+
+System_Boundary(kinobezdna, "Кинобездна - Онлайн-кинотеатр-агрегатор") {
+    Container(web_app, "Веб-версия", "React", "Веб-приложение кинотеатра, доступное в браузере")
+    Container(mobile_app, "Мобильное приложение", "Kotlin/Swift", "Приложение для iOS, padOS, Android")
+    Container(tv_app, "ТВ-приложение", "Flutter/Swift", "Приложение для tvOS, Android TV, Tizen, webOS")
+
+    Container(api_gateway, "API Gateway", "Envoy Proxy", "Единая точка входа, маршрутизация, кеширование, rate limiting")
+
+    Container(web_bff, "BFF для веб-версии", "Node.js + Express", "BFF для веб-приложения кинотеатра")
+    Container(mobile_bff, "BFF для мобильного приложения", "Go", "BFF для приложений под iOS, padOS, Android устройства")
+    Container(tv_bff, "BFF для ТВ-приложения", "Java + Spring Boot", "BFF для приложений под tvOS, Android TV, Tizen, webOS устройства")
+    
+    Container(user_service, "Сервис пользователей", "Java + Spring Boot", "Аутентификация, авторизация, управление профилями")
+    Container(catalog_service, "Сервис каталога", "Python + FastAPI", "Управление метаданными фильмов, актерами, жанрами")
+    Container(billing_service, "Биллинг-сервис", "Java + Spring Boot", "Платежи, подписки, скидки, промокоды")
+    Container(streaming_playback_service, "Сервис стриминга и управления воспроизведением", "Go + Fiber", "Генерация/выдача манифестов, проверка прав, отслеживание прогресса просмотра")
+    Container(recommendation_service, "Сервис рекомендаций", "Python + FastAPI", "Агрегация и хранение пользовательских рекомендаций")
+
+    ContainerDb(user_db, "База данных аутентификации", "PostgreSQL", "Пользователи, сессии, токены, профили")
+    ContainerDb(catalog_db, "База данных каталога", "PostgreSQL", "Фильмы, актеры, жанры")
+    ContainerDb(billing_db, "База данных биллинга", "PostgreSQL", "Платежи, подписки, скидки, транзакции")
+    ContainerDb(streaming_playback_db, "База данных стриминга", "PostgreSQL", "История просмотров, закладки, прогресс просмотра")
+    ContainerDb(redis_cache, "Кеш", "Redis Cluster", "Кеширование контента, манифестов")
+    ContainerDb(recommendation_db, "База данных рекомендаций", "PostgreSQL", "Сформированные пользовательские рекомендации")
+
+    Container(message_broker, "Брокер сообщений", "Apache Kafka", "Асинхронная коммуникация между сервисами")
+}
+
+Container_Ext(cdn, "CDN", "AWS CloudFront", "Внешняя CDN для доставки видео-контента")
+Container_Ext(payment_systems, "Платежные системы", "Внешние платежные шлюзы")
+Container_Ext(recommendation_ext_service, "Внешняя рекомендательная система", "Python/ML", "Внешний сервис рекомендаций")
+Container_Ext(content_provider, "Внешние источники контента", "Нетфликс, Кинопоиск, TMDB", "Сторонний кинотеатр, который хранит транскодированный видеофайл")
+
+Rel(user, web_app, "HTTPS")
+Rel(user, mobile_app, "HTTPS")
+Rel(user, tv_app, "HTTPS")
+
+Rel(web_app, api_gateway, "HTTPS")
+Rel(mobile_app, api_gateway, "HTTPS")
+Rel(tv_app, api_gateway, "HTTPS")
+
+Rel(api_gateway, web_bff, "GraphQL", "JSON")
+Rel(api_gateway, mobile_bff, "gRPC", "Protobuf")
+Rel(api_gateway, tv_bff, "REST", "JSON")
+
+Rel(web_bff, user_service, "HTTPS/REST", "JSON")
+Rel(mobile_bff, user_service, "HTTPS/REST", "JSON")
+Rel(tv_bff, user_service, "HTTPS/REST", "JSON")
+
+Rel(web_bff, catalog_service, "HTTPS/REST", "JSON")
+Rel(mobile_bff, catalog_service, "HTTPS/REST", "JSON")
+Rel(tv_bff, catalog_service, "HTTPS/REST", "JSON")
+
+Rel(web_bff, billing_service, "HTTPS/REST", "JSON")
+Rel(mobile_bff, billing_service, "HTTPS/REST", "JSON")
+Rel(tv_bff, billing_service, "HTTPS/REST", "JSON")
+
+Rel(web_bff, streaming_playback_service, "gRPC", "Protobuf")
+Rel(mobile_bff, streaming_playback_service, "gRPC", "Protobuf")
+Rel(tv_bff, streaming_playback_service, "gRPC", "Protobuf")
+
+Rel(recommendation_service, recommendation_db, "SQL")
+Rel(web_bff, recommendation_service, "HTTPS/REST")
+Rel(mobile_bff, recommendation_service, "HTTPS/REST")
+Rel(tv_bff, recommendation_service, "HTTPS/REST")
+Rel(recommendation_service, message_broker, "Kafka protocol", "Запрос рекомендаций\nПолучение сформированных рекомендаций")
+Rel(recommendation_ext_service, message_broker, "Kafka protocol", "Обработка запросов на формирование рекомендаций\nОтправка сформированных рекомендаций")
+
+Rel(user_service, user_db, "SQL", "Хранение пользователей")
+Rel(user_service, message_broker, "Kafka protocol", "События регистрации\nОценки просмотренных фильмов")
+
+Rel(catalog_service, catalog_db, "SQL", "Хранение метаданных контента")
+Rel(catalog_service, content_provider, "HTTPS/REST", "Синхронизация каталога")
+
+Rel(streaming_playback_service, content_provider, "HTTPS", "Получение манифеста/чанков медиафайла")
+Rel(streaming_playback_service, streaming_playback_db, "SQL", "Хранение истории просмотров, прогресса")
+Rel(streaming_playback_service, redis_cache, "Redis protocol", "Кеш манифестов и стриминговых данных")
+Rel(streaming_playback_service, message_broker, "Kafka protocol", "События просмотров для рекомендаций")
+
+Rel(billing_service, billing_db, "SQL", "Хранение финансовых данных")
+Rel(billing_service, payment_systems, "HTTPS/REST", "Обработка платежей")
+Rel(billing_service, message_broker, "Kafka protocol", "События платежей, подписок")
+
+Rel(web_app, cdn, "HTTPS")
+Rel(mobile_app, cdn, "HTTPS")
+Rel(tv_app, cdn, "HTTPS")
+
+@enduml
